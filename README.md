@@ -33,7 +33,7 @@ Um bot do [Telegram](https://t.me/EADconnectBot) desenvolvido em [Python](https:
 
 - Python 3.12
 - [Telethon](https://web.telegram.org/)
-- [Poetry](https://www.python.org/) (gerenciador de dependências)
+- [Poetry](https://python-poetry.org/) (gerenciador de dependências)
 - `toml` para configuração
 - SQLite / Sessões persistentes via arquivo `.session`
 
