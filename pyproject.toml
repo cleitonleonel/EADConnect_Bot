@@ -1,0 +1,24 @@
+[project]
+name = "eadconnect_bot"
+version = "0.1.0"
+description = "🎓 Consulte suas notas, prazos e desempenho acadêmico de forma simples e rápida, diretamente pelo Telegram."
+authors = [
+    {name = "cleiton",email = "cleiton.leonel@gmail.com"}
+]
+package-mode = false
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.12"
+dependencies = [
+    "requests (>=2.32.3,<3.0.0)",
+    "beautifulsoup4 (>=4.13.3,<5.0.0)",
+    "toml (>=0.10.2,<0.11.0)",
+    "schedule (>=1.2.2,<2.0.0)",
+    "telethon (>=1.40.0,<2.0.0)",
+    "smartbot @ git+https://github.com/cleitonleonel/SmartBot.git",
+    "eadconnect @ git+https://github.com/cleitonleonel/EADConnect.git",
+]
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
