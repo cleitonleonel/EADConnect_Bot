@@ -71,7 +71,7 @@ poetry install
 poetry shell
 ```
 
-3. **Configure o arquivo **:**
+3. **Configure o arquivo:**
 
 Crie ou edite o arquivo `config.toml` com os seguintes campos:
 
