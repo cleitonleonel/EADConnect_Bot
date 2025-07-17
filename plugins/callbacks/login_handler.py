@@ -141,7 +141,7 @@ async def handle_login_submit(event):
     password = event.client.get_user_data(sender_id, 'password')
 
     if not username or not password:
-        await event.respond("⚠️ You need to enter both username and password before logging in.")
+        await event.respond("⚠️ Você precisa inserir o nome de usuário e a senha antes de fazer login.")
         return
 
     event.client.set_user_state(sender_id, event.client.conversation_state.PROCESSING)
@@ -214,7 +214,7 @@ async def handle_reset_command(event):
     sender_id = event.sender_id
     event.client.reset_user_session(sender_id)
 
-    await event.respond("🔄 Your session has been reset.")
+    await event.respond("🔄 Sua sessão foi limpa.")
 
 
 @client.on(events.NewMessage)

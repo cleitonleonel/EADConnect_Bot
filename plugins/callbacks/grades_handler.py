@@ -10,52 +10,30 @@ from smartbot.utils.menu import (
 )
 from eadconnect.services.academic_service import AcademicService
 
-
 logging.basicConfig(level=logging.INFO)
 client = ClientHandler()
 
 
 async def fetch_disciplines_from_api(ead_client, period_id) -> List[Dict]:
-    """Busca as disciplinas ativas do usuário na API de Educação.
-    Substitua esta função pela sua implementação real da API.
-    """
+    """Busca as disciplinas ativas do usuário na API de Educação."""
     service = AcademicService(ead_client)
-    actual_courses = service.get_disciplines(period_id)
+    actual_courses = service.get_disciplines(
+        period_id,
+        status=[
+            'isActual',
+            'isSoon',
+            'isPast'
+        ]
+    )
     return actual_courses
 
 
 async def fetch_discipline_grades(ead_client, discipline_id: int) -> Dict:
     """
-    Busca as notas de uma disciplina específica da API.
-    Substitua esta função pela sua implementação real da API.
-    """
+    Busca as notas de uma disciplina específica da API."""
     service = AcademicService(ead_client)
     actual_grades = service.get_grade_by_discipline_id(discipline_id)
     return actual_grades
-
-
-def format_grades_message1(grades_data: Dict) -> str:
-    """
-    Formata os dados das notas numa mensagem legível.
-    """
-    discipline_name = grades_data.get('discipline_name', 'Disciplina')
-    grades = grades_data.get('grades', [])
-    final_grade = grades_data.get('final_grade', 0)
-    status = grades_data.get('status', 'Pendente')
-
-    message = f"📊 **{discipline_name}**\n\n"
-    message += "📝 **Avaliações:**\n"
-
-    for grade in grades:
-        assessment = grade.get('assessment', 'Avaliação')
-        grade_value = grade.get('grade', 0)
-        weight = grade.get('weight', 1)
-        message += f"• {assessment}: {grade_value} (Peso: {weight})\n"
-
-    message += f"\n🎯 **Nota Final:** {final_grade}\n"
-    message += f"📈 **Status:** {status}\n"
-
-    return message
 
 
 def format_grades_message(grades_data: Dict) -> str:
@@ -203,7 +181,6 @@ def format_grades_message(grades_data: Dict) -> str:
 async def handle_grades(event: Any):
     """
     Handles callback queries triggered by inline button interactions.
-    Busca disciplinas da API e cria menu dinâmico.
     """
     sender = await event.get_sender()
     sender_id = sender.id
@@ -229,7 +206,8 @@ async def handle_grades(event: Any):
         disciplines = []
         for discipline in disciplines_data:
             discipline_name = discipline.get('name', 'Disciplina Desconhecida')
-            button_text = discipline.get('code', ' '.join(discipline_name.split()[:-1])) # Use code or name for button text
+            button_text = discipline.get('code',
+                                         ' '.join(discipline_name.split()[:-1]))  # Use code or name for button text
             progress = discipline.get('progress', '')
             callback_data = f"grade_detail_{discipline['id']}_{'_'.join(button_text.split())}".encode()
             if progress:
@@ -280,7 +258,7 @@ async def handle_grade_detail(event: Any):
 
         ead_client.access_token = access_token
         grades_data = await fetch_discipline_grades(ead_client, discipline_id)
-        if not grades_data:
+        if not grades_data or not grades_data.get('finalGrade')['value']:
             await event.answer("❌ Nenhuma nota encontrada para esta disciplina.", alert=True)
             return
 
@@ -294,7 +272,6 @@ async def handle_grade_detail(event: Any):
 
         await event.delete()
         await event.respond(grades_message, buttons=back_buttons)
-
     except Exception as e:
         logging.error(f"Erro ao buscar notas da disciplina {discipline_id}: {e}")
         await event.answer("❌ Erro ao carregar notas. Tente novamente.", alert=True)
