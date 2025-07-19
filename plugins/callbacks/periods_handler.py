@@ -3,9 +3,7 @@ from telethon import events
 from typing import Any
 from smartbot.utils.handler import ClientHandler
 from smartbot.utils.buttons import build_inline_buttons
-from smartbot.utils.menu import (
-    with_stack_and_cleanup
-)
+from smartbot.utils.menu import with_stack_and_cleanup
 from eadconnect.services.academic_service import AcademicService
 
 logging.basicConfig(level=logging.INFO)
@@ -37,15 +35,13 @@ async def handle_select_periods(event: Any):
         ead_client = event.client.get_user_data(sender_id, 'education_api')
         access_token = event.client.get_user_data(sender_id, 'access_token')
         if not ead_client or not access_token:
-            await event.answer("❌ Cliente EAD não encontrado.", alert=True)
-            return
+            return await event.client.just_answer(event, "❌ Cliente EAD não encontrado.", alert=True)
 
         ead_client.access_token = access_token
         periods = await fetch_course_periods(ead_client, event)
 
         if not periods:
-            await event.answer("❌ Nenhum período encontrado.", alert=True)
-            return
+            return await event.client.just_answer(event, "❌ Nenhum período encontrado.", alert=True)
 
         buttons_data = [
             (period["name"], f"period_{period['id']}".encode())
@@ -68,4 +64,4 @@ async def handle_select_periods(event: Any):
 
     except Exception as e:
         logging.error(f"Erro ao carregar períodos: {e}")
-        await event.answer("❌ Erro ao carregar os períodos.", alert=True)
+        await event.client.just_answer(event, "❌ Erro ao carregar os períodos.", alert=True)

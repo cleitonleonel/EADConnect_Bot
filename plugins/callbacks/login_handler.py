@@ -141,17 +141,15 @@ async def handle_login_submit(event):
     password = event.client.get_user_data(sender_id, 'password')
 
     if not username or not password:
-        await event.respond("⚠️ Você precisa inserir o nome de usuário e a senha antes de fazer login.")
-        return
+        return await event.respond("⚠️ Você precisa inserir o nome de usuário e a senha antes de fazer login.")
 
     event.client.set_user_state(sender_id, event.client.conversation_state.PROCESSING)
 
     try:
         ead_client = event.client.get_user_data(sender_id, 'education_api')
         if not ead_client:
-            await event.answer("❌ Cliente EAD não encontrado.", alert=True)
-            event.client.set_user_state(sender_id, event.client.conversation_state.IDLE)
-            return
+            await event.client.just_answer(event, "❌ Cliente EAD não encontrado.", alert=True)
+            return event.client.set_user_state(sender_id, event.client.conversation_state.IDLE)
 
         ead_client.username = username
         ead_client.password = password

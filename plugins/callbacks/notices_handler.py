@@ -80,9 +80,8 @@ async def handle_notices(event: Any):
         ead_client = event.client.get_user_data(sender_id, 'education_api')
         access_token = event.client.get_user_data(sender_id, 'access_token')
         if not ead_client or not access_token:
-            await event.answer("❌ Cliente EAD não encontrado.", alert=True)
-            event.client.set_user_state(sender_id, event.client.conversation_state.IDLE)
-            return
+            await event.client.just_answer(event, "❌ Cliente EAD não encontrado.", alert=True)
+            return event.client.set_user_state(sender_id, event.client.conversation_state.IDLE)
 
         ead_client.access_token = access_token
         back_buttons = build_inline_buttons(utility_section, cols=1)
@@ -92,4 +91,4 @@ async def handle_notices(event: Any):
 
     except Exception as e:
         logging.error(f"Erro ao buscar mensagens na plataforma: {e}")
-        await event.answer("❌ Erro ao carregar mensagens. Tente novamente.", alert=True)
+        await event.client.just_answer(event, "❌ Erro ao carregar mensagens. Tente novamente.", alert=True)

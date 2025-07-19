@@ -1,7 +1,6 @@
 import logging
 from telethon import events
 from typing import Any
-from bs4 import BeautifulSoup
 from datetime import date, timedelta, datetime
 from smartbot.utils.handler import ClientHandler
 from smartbot.utils.buttons import build_inline_buttons
@@ -98,16 +97,14 @@ async def handle_notices(event: Any):
         ead_client = event.client.get_user_data(sender_id, 'education_api')
         access_token = event.client.get_user_data(sender_id, 'access_token')
         if not ead_client or not access_token:
-            await event.answer("❌ Cliente EAD não encontrado.", alert=True)
-            event.client.set_user_state(sender_id, event.client.conversation_state.IDLE)
-            return
+            await event.client.just_answer(event, "❌ Cliente EAD não encontrado.", alert=True)
+            return event.client.set_user_state(sender_id, event.client.conversation_state.IDLE)
 
         ead_client.access_token = access_token
         start_date, end_date = get_current_month_range()
         calendar = fetch_calendar(ead_client, start_date, end_date)
         if not calendar:
-            await event.respond("Nenhum evento encontrado no calendário.")
-            return
+            return await event.respond("Nenhum evento encontrado no calendário.")
 
         calendar_str = format_calendar(calendar)
         await event.respond(calendar_str, buttons=back_buttons)

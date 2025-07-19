@@ -4,10 +4,7 @@ from typing import Any, List, Dict
 from datetime import datetime
 from smartbot.utils.handler import ClientHandler
 from smartbot.utils.buttons import build_inline_buttons
-from smartbot.utils.menu import (
-    with_stack_and_cleanup,
-    MENU_KEY
-)
+from smartbot.utils.menu import with_stack_and_cleanup
 from eadconnect.services.academic_service import AcademicService
 
 logging.basicConfig(level=logging.INFO)
@@ -191,23 +188,20 @@ async def handle_grades(event: Any):
         ead_client = event.client.get_user_data(sender_id, 'education_api')
         access_token = event.client.get_user_data(sender_id, 'access_token')
         if not ead_client or not access_token:
-            await event.answer("❌ Cliente EAD não encontrado.", alert=True)
             event.client.set_user_state(sender_id, event.client.conversation_state.IDLE)
-            return
+            return await event.client.just_answer(event, "❌ Cliente EAD não encontrado.", alert=True)
 
         ead_client.access_token = access_token
         disciplines_data = await fetch_disciplines_from_api(ead_client, period_id)
 
         if not disciplines_data:
-            await event.answer("❌ Nenhuma disciplina encontrada.", alert=True)
-            event.client.drivers[sender_id][MENU_KEY].pop(-1)
-            return
+            return await event.client.just_answer(event, "❌ Nenhuma disciplina encontrada.", alert=True)
 
         disciplines = []
         for discipline in disciplines_data:
             discipline_name = discipline.get('name', 'Disciplina Desconhecida')
-            button_text = discipline.get('code',
-                                         ' '.join(discipline_name.split()[:-1]))  # Use code or name for button text
+            formatted_name = ' '.join(discipline_name.split()[:-1])
+            button_text = discipline.get('code', formatted_name)  # Use code or name for button text
             progress = discipline.get('progress', '')
             callback_data = f"grade_detail_{discipline['id']}_{'_'.join(button_text.split())}".encode()
             if progress:
@@ -231,7 +225,7 @@ async def handle_grades(event: Any):
 
     except Exception as e:
         logging.error(f"Erro ao buscar disciplinas: {e}")
-        await event.answer("❌ Erro ao carregar disciplinas. Tente novamente.", alert=True)
+        await event.client.just_answer(event, "❌ Erro ao carregar disciplinas. Tente novamente.", alert=True)
 
 
 @client.on(events.CallbackQuery(pattern=r'^grade_detail_(\d+)_(.+)$'))
@@ -252,15 +246,13 @@ async def handle_grade_detail(event: Any):
         ead_client = event.client.get_user_data(sender_id, 'education_api')
         access_token = event.client.get_user_data(sender_id, 'access_token')
         if not ead_client or not access_token:
-            await event.answer("❌ Cliente EAD não encontrado.", alert=True)
             event.client.set_user_state(sender_id, event.client.conversation_state.IDLE)
-            return
+            return await event.client.just_answer(event, "❌ Cliente EAD não encontrado.", alert=True)
 
         ead_client.access_token = access_token
         grades_data = await fetch_discipline_grades(ead_client, discipline_id)
         if not grades_data or not grades_data.get('finalGrade')['value']:
-            await event.answer("❌ Nenhuma nota encontrada para esta disciplina.", alert=True)
-            return
+            return await event.client.just_answer(event, "❌ Nenhuma nota encontrada para esta disciplina.", alert=True)
 
         grades_data.update({'discipline_name': discipline_name.replace('_', ' ')})
         grades_message = format_grades_message(grades_data)
@@ -274,4 +266,4 @@ async def handle_grade_detail(event: Any):
         await event.respond(grades_message, buttons=back_buttons)
     except Exception as e:
         logging.error(f"Erro ao buscar notas da disciplina {discipline_id}: {e}")
-        await event.answer("❌ Erro ao carregar notas. Tente novamente.", alert=True)
+        await event.client.just_answer(event, "❌ Erro ao carregar notas. Tente novamente.", alert=True)
