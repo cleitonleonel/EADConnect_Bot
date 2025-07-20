@@ -1,5 +1,6 @@
 import logging
 from telethon import events
+from typing import Any
 from smartbot.utils.handler import ClientHandler
 from smartbot.utils.menu import (
     with_stack_and_cleanup,
@@ -19,7 +20,7 @@ login_buttons = get_login_buttons()
 
 @client.on(events.CallbackQuery(pattern=b'^login$'))
 @with_stack_and_cleanup()
-async def handle_login_command(event):
+async def handle_login_command(event: Any):
     """
     Handle the main login command callback.
 
@@ -39,7 +40,7 @@ async def handle_login_command(event):
 
 @client.on(events.CallbackQuery(pattern=b'^login_username$'))
 @with_stack_and_cleanup(False)
-async def handle_username_request(event):
+async def handle_username_request(event: Any):
     """
     Handle username input request callback.
 
@@ -51,8 +52,6 @@ async def handle_username_request(event):
     """
     sender_id = event.sender_id
 
-    await event.answer()
-
     user_msg = await event.client.ask_user(
         sender_id,
         "✏️ Entre com seu **usuário**:",
@@ -63,7 +62,7 @@ async def handle_username_request(event):
 
 @client.on(events.CallbackQuery(pattern=b'^login_password$'))
 @with_stack_and_cleanup(False)
-async def handle_password_request(event):
+async def handle_password_request(event: Any):
     """
     Handle password input request callback.
 
@@ -75,8 +74,6 @@ async def handle_password_request(event):
     """
     sender_id = event.sender_id
 
-    await event.answer()
-
     password_msg = await event.client.ask_user(
         sender_id,
         "✏️ Entre com sua **senha**:",
@@ -86,7 +83,7 @@ async def handle_password_request(event):
 
 
 @client.on(events.NewMessage)
-async def handle_user_input(event):
+async def handle_user_input(event: Any):
     """
     Handle user text input based on their current conversation state.
 
@@ -124,7 +121,7 @@ async def handle_user_input(event):
 
 @client.on(events.CallbackQuery(pattern=b'^login_submit$'))
 @with_stack_and_cleanup(False)
-async def handle_login_submit(event):
+async def handle_login_submit(event: Any):
     """
     Handle login submission callback.
 
@@ -134,14 +131,17 @@ async def handle_login_submit(event):
     Args:
         event: Telegram callback query event
     """
-    await event.answer()
     sender_id = event.sender_id
 
     username = event.client.get_user_data(sender_id, 'username')
     password = event.client.get_user_data(sender_id, 'password')
 
     if not username or not password:
-        return await event.respond("⚠️ Você precisa inserir o nome de usuário e a senha antes de fazer login.")
+        return await event.client.just_answer(
+            event,
+            "⚠️ Você precisa inserir o nome de usuário e a senha antes de fazer login.",
+            alert=True
+        )
 
     event.client.set_user_state(sender_id, event.client.conversation_state.PROCESSING)
 
@@ -156,6 +156,12 @@ async def handle_login_submit(event):
 
         access_token = authenticate(ead_client, attempts=1, auto_save=False)
         ead_client.access_token = access_token
+        if not access_token:
+            return await event.client.just_answer(
+                event,
+                "❌ Usuário ou Senha incorretos.\nPor favor, tente novamente.",
+                alert=True
+            )
 
         event.client.set_user_data(sender_id, 'access_token', access_token)
 
@@ -177,14 +183,18 @@ async def handle_login_submit(event):
         event.client.set_user_state(sender_id, event.client.conversation_state.IDLE)
 
     except Exception as e:
-        await event.respond(f"❌ Usuário ou Senha incorretos.\nPor favor, tente novamente.")
+        await event.client.just_answer(
+            event,
+            "❌ Usuário ou Senha incorretos.\nPor favor, tente novamente.",
+            alert=True
+        )
         logging.error(f"Authentication error for user {sender_id}: {e}")
         event.client.set_user_state(sender_id, event.client.conversation_state.IN_MENU)
 
 
 @client.on(events.NewMessage(pattern=r'/status'))
 @with_stack_and_cleanup(False)
-async def handle_status_command(event):
+async def handle_status_command(event: Any):
     """
     Handle status command to show user's current conversation state.
 
@@ -202,7 +212,7 @@ async def handle_status_command(event):
 
 @client.on(events.NewMessage(pattern=r'/reset'))
 @with_stack_and_cleanup(False)
-async def handle_reset_command(event):
+async def handle_reset_command(event: Any):
     """
     Handle reset command to reset user's session to idle state.
 
@@ -216,7 +226,7 @@ async def handle_reset_command(event):
 
 
 @client.on(events.NewMessage)
-async def handle_global_conversation(event):
+async def handle_global_conversation(event: Any):
     """
     Global conversation handler to process messages based on user state.
 
