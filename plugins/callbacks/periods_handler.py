@@ -11,7 +11,7 @@ logging.basicConfig(level=logging.INFO)
 client = ClientHandler()
 
 
-async def fetch_course_periods(ead_client, event) -> list:
+async def fetch_course_periods(ead_client) -> list:
     """
     Fetches the course periods from the API.
     This function should be replaced with the actual implementation to fetch periods.
@@ -38,7 +38,7 @@ async def handle_select_periods(event: Any):
             return await event.client.just_answer(event, "❌ Cliente EAD não encontrado.", alert=True)
 
         ead_client.access_token = access_token
-        periods = await fetch_course_periods(ead_client, event)
+        periods = await fetch_course_periods(ead_client)
 
         if not periods:
             return await event.client.just_answer(event, "❌ Nenhum período encontrado.", alert=True)

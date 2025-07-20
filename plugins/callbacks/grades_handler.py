@@ -181,7 +181,7 @@ async def handle_grades(event: Any):
     """
     sender = await event.get_sender()
     sender_id = sender.id
-    logging.info(f"Callback Triggered by User ID: {sender_id}")
+    logging.info(f"[Grades Handler] by User ID: {sender_id}")
     period_id = int(event.data.decode().split("_")[1])
 
     try:

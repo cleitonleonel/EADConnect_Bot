@@ -12,7 +12,7 @@ client = ClientHandler()
 
 @client.on(events.CallbackQuery(pattern='^ajuda$'))
 @with_stack_and_cleanup()
-async def handle_notices(event: Any):
+async def handle_help(event: Any):
     """
     Handles callback queries triggered by inline button interactions.
 
@@ -20,7 +20,7 @@ async def handle_notices(event: Any):
     """
     sender = await event.get_sender()
     sender_id = sender.id
-    logging.info(f"Callback Triggered by User ID: {sender_id}")
+    logging.info(f"[Help Handler] by User ID: {sender_id}")
     logging.debug(f"Event Client Instance: {event.client}")
 
     await event.delete()

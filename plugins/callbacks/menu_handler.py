@@ -25,9 +25,10 @@ async def handle_menu(event: Any):
     """
     sender = await event.get_sender()
     sender_id = sender.id
+
     await event.delete()
 
-    logging.info(f"Callback Triggered by User ID: {sender_id}")
+    logging.info(f"[Menu Handler] by User ID: {sender_id}")
     logging.debug(f"Event Client Instance: {event.client}")
 
     help_msg = await event.respond(
@@ -45,4 +46,4 @@ async def handle_menu(event: Any):
 
     menu_buttons = get_menu_buttons(no_login=access_token)
     menu_title = "📚 **Menu Principal**"
-    await event.respond(menu_title, buttons=menu_buttons)
+    return await event.respond(menu_title, buttons=menu_buttons)

@@ -68,10 +68,9 @@ async def handle_notices(event: Any):
     """
     sender = await event.get_sender()
     sender_id = sender.id
-    logging.info(f"Callback Triggered by User ID: {sender_id}")
+    logging.info(f"[Notices Handler] by User ID: {sender_id}")
     logging.debug(f"Event Client Instance: {event.client}")
 
-    await event.delete()
     utility_section = [
         ("🔙 Voltar", b"back_menu"),
     ]
@@ -80,13 +79,17 @@ async def handle_notices(event: Any):
         ead_client = event.client.get_user_data(sender_id, 'education_api')
         access_token = event.client.get_user_data(sender_id, 'access_token')
         if not ead_client or not access_token:
-            await event.client.just_answer(event, "❌ Cliente EAD não encontrado.", alert=True)
-            return event.client.set_user_state(sender_id, event.client.conversation_state.IDLE)
+            event.client.set_user_state(sender_id, event.client.conversation_state.IDLE)
+            return await event.client.just_answer(event, "❌ Cliente EAD não encontrado.", alert=True)
 
         ead_client.access_token = access_token
         back_buttons = build_inline_buttons(utility_section, cols=1)
         messages = fetch_messages(ead_client)
         notices_message = format_messages(messages)
+        if not notices_message:
+            return await event.client.just_answer(event, "Nenhuma notificação encontrada.", alert=True)
+
+        await event.delete()
         await event.respond(notices_message, buttons=back_buttons)
 
     except Exception as e:

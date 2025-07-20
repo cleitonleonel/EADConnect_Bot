@@ -76,7 +76,7 @@ def format_calendar(calendar):
 
 @client.on(events.CallbackQuery(pattern='^calendario$'))
 @with_stack_and_cleanup()
-async def handle_notices(event: Any):
+async def handle_calendar(event: Any):
     """
     Handles callback queries triggered by inline button interactions.
 
@@ -84,10 +84,9 @@ async def handle_notices(event: Any):
     """
     sender = await event.get_sender()
     sender_id = sender.id
-    logging.info(f"Callback Triggered by User ID: {sender_id}")
+    logging.info(f"[Calendar Handler] by User ID: {sender_id}")
     logging.debug(f"Event Client Instance: {event.client}")
 
-    await event.delete()
     utility_section = [
         ("🔙 Voltar", b"back_menu"),
     ]
@@ -97,16 +96,17 @@ async def handle_notices(event: Any):
         ead_client = event.client.get_user_data(sender_id, 'education_api')
         access_token = event.client.get_user_data(sender_id, 'access_token')
         if not ead_client or not access_token:
-            await event.client.just_answer(event, "❌ Cliente EAD não encontrado.", alert=True)
-            return event.client.set_user_state(sender_id, event.client.conversation_state.IDLE)
+            event.client.set_user_state(sender_id, event.client.conversation_state.IDLE)
+            return await event.client.just_answer(event, "❌ Cliente EAD não encontrado.", alert=True)
 
         ead_client.access_token = access_token
         start_date, end_date = get_current_month_range()
         calendar = fetch_calendar(ead_client, start_date, end_date)
         if not calendar:
-            return await event.respond("Nenhum evento encontrado no calendário.")
+            return await event.client.just_answer(event, "Nenhum evento encontrado no calendário.", alert=True)
 
         calendar_str = format_calendar(calendar)
+        await event.delete()
         await event.respond(calendar_str, buttons=back_buttons)
 
     except Exception as e:
