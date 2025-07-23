@@ -8,14 +8,13 @@ from smartbot.utils.menu import (
 )
 from plugins.helpers.buttons import (
     get_login_buttons,
-    get_menu_buttons
+    get_menu_buttons,
+    replace_button_text
 )
 from eadconnect.utils.auth import authenticate
 
 logging.basicConfig(level=logging.INFO)
 client = ClientHandler()
-
-login_buttons = get_login_buttons()
 
 
 @client.on(events.CallbackQuery(pattern=b'^login$'))
@@ -32,6 +31,7 @@ async def handle_login_command(event: Any):
     """
     sender_id = event.sender_id
     await event.delete()
+    login_buttons = get_login_buttons()
 
     login_msg = await event.respond("🔐 **Configurações de Acesso**", buttons=login_buttons)
     event.client.set_user_data(sender_id, 'login_message', login_msg)
@@ -96,22 +96,34 @@ async def handle_user_input(event: Any):
     sender_id = event.sender_id
     current_state = event.client.get_user_state(sender_id)
     login_msg = event.client.get_user_data(sender_id, 'login_message')
+
     if login_msg:
-        await event.client.remove_messages(sender_id, [login_msg.id])
+        delete_msg = event.client.drivers[sender_id][DELETE_KEY]
+        await event.client.remove_messages(sender_id, [delete_msg[0]] if delete_msg else [])
 
     await event.delete()
 
     if current_state == event.client.conversation_state.WAITING_USERNAME:
         event.client.set_user_data(sender_id, 'username', event.text.strip())
-        login_buttons[0][0].text = f"👤 Usuário: {event.text.strip()}"
-        login_msg = await event.respond("✅ Usuário salvo com sucesso!", buttons=login_buttons)
+        login_buttons = await replace_button_text(
+            message=login_msg,
+            row=0,
+            column=0,
+            new_text=f"👤 Usuário: {event.text.strip()}",
+        )
+        login_msg = await login_msg.edit("✅ Usuário salvo com sucesso!", buttons=login_buttons)
         event.client.set_user_data(sender_id, 'login_message', login_msg)
         event.client.set_user_state(sender_id, event.client.conversation_state.IN_MENU)
 
     elif current_state == event.client.conversation_state.WAITING_PASSWORD:
         event.client.set_user_data(sender_id, 'password', event.text.strip())
-        login_buttons[1][0].text = f"🔑 Senha = {'*' * len(event.text.strip())}"
-        login_msg = await event.respond("✅ Senha salva com sucesso!.", buttons=login_buttons)
+        login_buttons = await replace_button_text(
+            message=login_msg,
+            row=1,
+            column=0,
+            new_text=f"🔑 Senha = {'*' * len(event.text.strip())}",
+        )
+        login_msg = await login_msg.edit("✅ Senha salva com sucesso!.", buttons=login_buttons)
         event.client.set_user_data(sender_id, 'login_message', login_msg)
         event.client.set_user_state(sender_id, event.client.conversation_state.IN_MENU)
 
