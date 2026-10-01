@@ -71,7 +71,7 @@ def get_menu_buttons(no_login=False) -> list[list[Button]]:
     """
     Returns a list of inline buttons for the main menu.
 
-    The buttons are organized into sections for login, main actions, notifications,
+    The buttons are organized into sections for login, main actions, notifications.
     """
     login_section = [
         ("👤 Login", b"login") if not no_login else ("", b""),

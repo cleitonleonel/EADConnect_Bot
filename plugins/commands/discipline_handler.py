@@ -13,7 +13,7 @@ async def handle_discipline(event: Any):
     """
     Handles the `/disciplinas` command by sending a greeting message.
 
-    :param event: The event triggered by the `/disciplinas` command.
+    :param event: The event is triggered by the `/disciplinas` command.
     """
 
     sender = await event.get_sender()

@@ -138,14 +138,6 @@ def format_grades_message(grades_data: Dict) -> str:
 
         message += f"\n{'─' * 20}\n"
 
-    message += f"\n🎯 **RESULTADO FINAL**\n"
-    if final_grade_visible:
-        message += f"📊 **Nota Final:** {final_grade}\n"
-    else:
-        message += f"📊 **Nota Final:** Oculta\n"
-
-    message += f"🏆 **Status:** {status}\n"
-
     total_activities = sum(len(cat.get("children", [])) for cat in structure)
     completed_activities = sum(
         len([child for child in cat.get("children", [])
@@ -155,18 +147,31 @@ def format_grades_message(grades_data: Dict) -> str:
         for cat in structure
     )
 
+    completion_rate = 0.0
     if total_activities > 0:
         completion_rate = (completed_activities / total_activities) * 100
+
+    if completion_rate >= 100:
+        message += f"\n🎯 **RESULTADO FINAL**\n"
+        if final_grade_visible:
+            message += f"📊 **Nota Final:** {final_grade}\n"
+        else:
+            message += f"📊 **Nota Final:** Oculta\n"
+
+        message += f"🏆 **Status:** {status}\n"
+
         message += f"\n📈 **Taxa de Conclusão:** {completion_rate:.1f}%\n"
 
-    if final_grade >= 7.0:
-        message += f"\n🎉 **Parabéns! Você foi aprovado!**\n"
-    elif final_grade >= 5.0:
-        message += f"\n📚 **Atenção: Você está em recuperação**\n"
-        message += f"💪 Estude para a prova final!\n"
+        if final_grade >= 7.0:
+            message += f"\n🎉 **Parabéns! Você foi aprovado!**\n"
+        elif final_grade >= 5.0:
+            message += f"\n📚 **Atenção: Você está em recuperação**\n"
+            message += f"💪 Estude para a prova final!\n"
+        else:
+            message += f"\n😔 **Você foi reprovado nesta disciplina**"
+            message += f"💪 Não desista, tente novamente!\n"
     else:
-        message += f"\n😔 **Você foi reprovado nesta disciplina**"
-        message += f"💪 Não desista, tente novamente!\n"
+        message += f"\n📈 **Taxa de Conclusão:** {completion_rate:.1f}%\n"
 
     message += f"\n🤖 __Atualizado em {datetime.now().strftime('%d/%m/%Y às %H:%M')}__"
 

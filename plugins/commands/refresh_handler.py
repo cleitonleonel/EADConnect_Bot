@@ -13,7 +13,7 @@ async def handle_refresh(event: Any):
     """
     Handles the `/refresh` command by sending a greeting message.
 
-    :param event: The event triggered by the `/refresh` command.
+    :param event: The event is triggered by the `/refresh` command.
     """
 
     sender = await event.get_sender()

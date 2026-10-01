@@ -13,7 +13,7 @@ async def handle_notices(event: Any):
     """
     Handles the `/avisos` command by sending a greeting message.
 
-    :param event: The event triggered by the `/avisos` command.
+    :param event: The event is triggered by the `/avisos` command.
     """
 
     sender = await event.get_sender()

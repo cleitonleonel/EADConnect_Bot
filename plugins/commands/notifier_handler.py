@@ -13,7 +13,7 @@ async def handle_notifications(event: Any):
     """
     Handles the `/notifications` command by sending a greeting message.
 
-    :param event: The event triggered by the `/notifications` command.
+    :param event: The event is triggered by the `/notifications` command.
     """
 
     sender = await event.get_sender()
